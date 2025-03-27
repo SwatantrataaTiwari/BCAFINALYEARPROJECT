@@ -179,7 +179,7 @@ def db_status():
 
 @app.route('/')
 def index():
-    return redirect(url_for('register'))
+    return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -264,18 +264,32 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Main login route that serves as the entry point of the application
+    """
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         
+        # Verify user credentials
         user = verify_user(username, password)
+        
         if user:
+            # Successfully authenticated
             session['username'] = username
             session['user_id'] = user['user_id']
             session['role'] = user['role']
 
-            return redirect(url_for('teacher_dashboard') if user['role'] == 'teacher' else url_for('dashboard'))
+            # Redirect based on user role
+            if user['role'] == 'teacher':
+                return redirect(url_for('teacher_dashboard'))
+            elif user['role'] == 'student':
+                return redirect(url_for('dashboard'))
+        
+        # If login fails
+        return render_template('login.html', error='Invalid credentials or unauthorized access')
     
+    # GET request - display login page
     return render_template('login.html')
 
 @app.route('/dashboard')
@@ -496,7 +510,6 @@ def initialize_face_recognition():
     KNOWN_FACE_NAMES = classNames
     print(f"Loaded {len(KNOWN_FACE_ENCODINGS)} face encodings at startup")
 
-# Modify your mark_attendance route
 @app.route('/mark_attendance', methods=['GET', 'POST'])
 def mark_attendance():
     if 'username' not in session:
@@ -505,9 +518,27 @@ def mark_attendance():
     conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
 
+    # Prepare context variables
+    context = {
+        'current_date': datetime.now().strftime('%Y-%m-%d'),
+        'current_time': datetime.now().strftime('%H:%M:%S')
+    }
+
     # Fetch available courses
     c.execute("SELECT course_id, course_name FROM courses")
-    courses = c.fetchall()
+    courses = [{'course_id': row[0], 'course_name': row[1]} for row in c.fetchall()]
+    context['courses'] = courses
+
+    # If teacher, fetch students for the selected course
+    if session.get('role') == 'teacher':
+        course_id = request.args.get('course_id', 1)  # Default to first course
+        c.execute("""
+            SELECT user_id as id, username 
+            FROM users 
+            WHERE role = 'student' AND 
+            user_id IN (SELECT DISTINCT user_id FROM attendance WHERE course_id = ?)
+        """, (course_id,))
+        context['students'] = [dict(zip(['id', 'username'], row)) for row in c.fetchall()]
 
     if request.method == 'POST':
         course_id = request.form.get('course_id')
@@ -564,7 +595,7 @@ def mark_attendance():
         cv2.destroyAllWindows()
 
     conn.close()
-    return render_template('mark_attendance.html', courses=courses)
+    return render_template('mark_attendance.html', **context)
 
 
 @app.route('/attendance_confirmation/<string:username>')

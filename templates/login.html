@@ -88,6 +88,16 @@
             font-weight: 600;
         }
 
+        .error-message {
+            background-color: #ffebee;
+            color: #d32f2f;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
         .input-group {
             position: relative;
             margin-bottom: 25px;
@@ -206,6 +216,9 @@
     <div class="container">
         <h2>Welcome Back</h2>
         <form action="{{ url_for('login') }}" method="POST" id="loginForm">
+            {% if error %}
+            <div class="error-message">{{ error }}</div>
+            {% endif %}
             <div class="input-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" required 
@@ -217,9 +230,6 @@
                        placeholder="Enter your password" autocomplete="current-password">
             </div>
             <button type="submit">Login</button>
-            <p>
-                Don't have an account? <a href="{{ url_for('register') }}">Register</a>
-            </p>
         </form>
         <div class="loading">
             <div class="loading-spinner"></div>

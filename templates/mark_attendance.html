@@ -55,6 +55,7 @@
             margin-bottom: 1.5rem;
             background-color: white;
             transition: all 0.3s ease;
+            color: #2d3748;
         }
 
         select:focus {
@@ -162,19 +163,9 @@
         <form method="POST" id="faceRecForm">
             <label for="course">Select Course</label>
             <select name="course_id" id="courseDropdown" required>
-                {% for course in courses %}
-                <option value="{{ course[0] }}">
-                    {% if course[1] == "Introduction to Python" %}
-                        BCA
-                    {% elif course[1] == "Data Structures" %}
-                        BBA
-                    {% elif course[1] == "Database Management" %}
-                        BSc
-                    {% else %}
-                        {{ course[1] }}
-                    {% endif %}
-                </option>
-                {% endfor %}
+                <option value="1">BCA</option>
+                <option value="2">BBA</option>
+                <option value="3">BSc</option>
             </select>
 
             <div class="camera-icon">
