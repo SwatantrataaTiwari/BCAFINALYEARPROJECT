@@ -179,7 +179,7 @@ def db_status():
 
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return redirect(url_for('register'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -264,32 +264,18 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """
-    Main login route that serves as the entry point of the application
-    """
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         
-        # Verify user credentials
         user = verify_user(username, password)
-        
         if user:
-            # Successfully authenticated
             session['username'] = username
             session['user_id'] = user['user_id']
             session['role'] = user['role']
 
-            # Redirect based on user role
-            if user['role'] == 'teacher':
-                return redirect(url_for('teacher_dashboard'))
-            elif user['role'] == 'student':
-                return redirect(url_for('dashboard'))
-        
-        # If login fails
-        return render_template('login.html', error='Invalid credentials or unauthorized access')
+            return redirect(url_for('teacher_dashboard') if user['role'] == 'teacher' else url_for('dashboard'))
     
-    # GET request - display login page
     return render_template('login.html')
 
 @app.route('/dashboard')
