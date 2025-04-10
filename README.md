@@ -55,7 +55,7 @@ This is a Python-based **Facial Recognition Attendance System** designed to auto
  4 Download the excel file to check all student attendance.
 
 
-📜 License
+## 📜 License
 This project is open-source and free to use under the MIT License.
 
 
